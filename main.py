@@ -28,3 +28,19 @@ async def fetch(id:int):
         return{"Name":f"{students[id]}"}
     else:
         return "Not found"
+    
+
+
+@app.get("/add/{a}/{b}")
+async def add(a:int,b:int):
+    return{"Sum":a+b}
+
+
+@app.get("/sub/{a}/{b}")
+async def add(a:int,b:int):
+    return{"Sub":a-b}
+
+@app.get("/multiply/{a}/{b}")
+async def add(a:int,b:int):
+    return{"Sum":a*b}
+
