@@ -1,55 +1,115 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>FastAPI Calculator</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FastAPI Smart Calculator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;600&display=swap" rel="stylesheet">
   <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
     body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      margin-top: 50px;
-      background: #f0f0f0;
+      background: linear-gradient(to bottom right, #d7e1ec, #f8fafc);
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .glass {
+      background: rgba(255, 255, 255, 0.35);
+      backdrop-filter: blur(20px);
+      border-radius: 24px;
+      padding: 40px;
+      width: 90%;
+      max-width: 400px;
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
     }
 
     h1 {
-      margin-bottom: 20px;
+      font-size: 28px;
+      font-weight: 600;
+      margin-bottom: 30px;
+      color: #1c1c1e;
     }
 
-    .container {
-      background: #fff;
-      padding: 30px;
-      display: inline-block;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
     }
 
     input, select, button {
-      padding: 10px;
-      margin: 10px;
-      font-size: 16px;
-      border-radius: 5px;
-      border: 1px solid #ccc;
+      font-size: 18px;
+      padding: 14px;
+      border: none;
+      border-radius: 12px;
+      outline: none;
+      background: rgba(255, 255, 255, 0.7);
+      color: #111;
+      box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+      transition: all 0.2s ease;
+    }
+
+    input:focus, select:focus {
+      box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.3);
+    }
+
+    button {
+      background: linear-gradient(to right, #007aff, #0a84ff);
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    button:hover {
+      transform: scale(1.02);
+      background: linear-gradient(to right, #0066cc, #007aff);
     }
 
     #result {
-      font-size: 20px;
-      margin-top: 20px;
-      color: #333;
+      font-size: 22px;
+      font-weight: 500;
+      margin-top: 25px;
+      color: #222;
+    }
+
+    .footer {
+      margin-top: 25px;
+      font-size: 14px;
+      color: #999;
+    }
+
+    @media (max-width: 500px) {
+      h1 {
+        font-size: 24px;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>FastAPI Calculator</h1>
-    <input type="number" id="num1" placeholder="Enter first number">
-    <input type="number" id="num2" placeholder="Enter second number">
-    <select id="operation">
-      <option value="add">Addition</option>
-      <option value="sub">Subtraction</option>
-      <option value="multiply">Multiplication</option>
-    </select>
-    <button onclick="calculate()">Calculate</button>
+  <div class="glass">
+    <h1>🍏 Smart Calculator</h1>
+    <div class="input-group">
+      <input type="number" id="num1" placeholder="Enter first number" />
+      <input type="number" id="num2" placeholder="Enter second number" />
+      <select id="operation">
+        <option value="add">➕ Add</option>
+        <option value="sub">➖ Subtract</option>
+        <option value="multiply">✖️ Multiply</option>
+      </select>
+      <button onclick="calculate()">🚀 Calculate</button>
+    </div>
     <div id="result"></div>
+    <div class="footer">Powered by FastAPI ⚡</div>
   </div>
 
   <script>
@@ -58,20 +118,21 @@
       const b = document.getElementById('num2').value;
       const op = document.getElementById('operation').value;
 
-      if (a === '' || b === '') {
-        document.getElementById('result').innerText = 'Please enter both numbers.';
+      if (!a || !b) {
+        document.getElementById('result').innerText = "⚠️ Please enter both numbers.";
         return;
       }
 
-      const url = `http://127.0.0.1:8000/${op}/${a}/${b}`;
+      const serverIP = "127.0.0.1"; // Change this to your local FastAPI server IP
+      const url = `http://${serverIP}:8000/${op}/${a}/${b}`;
 
       try {
         const response = await fetch(url);
         const data = await response.json();
-        document.getElementById('result').innerText = `Result: ${Object.values(data)[0]}`;
-      } catch (error) {
-        document.getElementById('result').innerText = 'Error fetching result.';
-        console.error(error);
+        document.getElementById('result').innerText = `✅ Result: ${Object.values(data)[0]}`;
+      } catch (err) {
+        document.getElementById('result').innerText = "❌ Unable to connect to server.";
+        console.error(err);
       }
     }
   </script>
