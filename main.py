@@ -63,3 +63,21 @@ async def multiply(a: int, b: int):
 @app.get("/answers")
 async def a():
     return{"Answers":answers}
+
+
+
+
+from pydantic import BaseModel
+
+
+
+class DataModel(BaseModel):
+    value: int  # This defines the expected structure of the JSON
+
+@app.post("/uploade")
+async def upload_data(item: DataModel):
+    answers.append(item.value)
+    return {"msg": "data added"}
+
+
+
