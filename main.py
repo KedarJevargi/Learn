@@ -1,5 +1,6 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 
 app = FastAPI()
 
@@ -16,68 +17,48 @@ students = {
     110: "Julia"
 }
 
+class Values(BaseModel):
+    a: int
+    b: int
+
+answers = []
+
 @app.get("/")
 async def root():
     return {"message": "Hello World"}
 
-
-
-@app.get("/students/{id}")
-
-async def fetch(id:int):
+@app.get("/students")
+async def fetch(id: int):
     if id in students:
-        return{"Name":f"{students[id]}"}
-    else:
-        return "Not found"
-    
+        return {"Name": students[id]}
+    raise HTTPException(status_code=404, detail="Student not found")
 
+@app.post("/add")
+async def add(val: Values):
+    ans = val.a + val.b
+    answers.append(ans)
+    return {"Message": "Addition successful", "Result": ans}
 
-# Allow CORS for frontend
+@app.post("/sub")
+async def sub(val: Values):
+    ans = val.a - val.b
+    answers.append(ans)
+    return {"Message": "Subtraction successful", "Result": ans}
+
+@app.post("/multiply")
+async def multiply(val: Values):
+    ans = val.a * val.b
+    answers.append(ans)
+    return {"Message": "Multiplication successful", "Result": ans}
+
+@app.get("/answers")
+async def get_answers():
+    return {"Answers": answers}
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Use specific origins in production
+    allow_origins=["*"],  # Update this in production
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-answers=[]
-@app.get("/add/{a}/{b}")
-async def add(a: int, b: int):
-    ans=a + b
-    answers.append(ans)
-    return {"Sum": ans}
-
-@app.get("/sub/{a}/{b}")
-async def sub(a: int, b: int):
-    ans=a-b
-    answers.append(ans)
-    return {"Sub": ans}
-
-@app.get("/multiply/{a}/{b}")
-async def multiply(a: int, b: int):
-    ans=a*b
-    answers.append(ans)
-    return {"Product": ans}
-
-
-@app.get("/answers")
-async def a():
-    return{"Answers":answers}
-
-
-
-
-from pydantic import BaseModel
-
-
-
-class DataModel(BaseModel):
-    value: int  # This defines the expected structure of the JSON
-
-@app.post("/uploade")
-async def upload_data(item: DataModel):
-    answers.append(item.value)
-    return {"msg": "data added"}
-
-
-
