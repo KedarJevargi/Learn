@@ -85,7 +85,7 @@
       }
 
       try {
-        const response = await fetch(`http://127.0.0.1:8000/${op}`, {
+        const response = await fetch(`http://127.0.0.1:3000/${op}`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ a, b })
