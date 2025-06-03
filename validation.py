@@ -5,7 +5,7 @@ class Patient(BaseModel):
     name:Annotated[str,Field(max_length=20, 
                              title="Name of the patient", 
                              description="Give the name of the patient in less than 20 char", 
-                             examples=['Kedar'])]
+                             examples=['Kedar','Panchami'])]
     email:Optional[EmailStr]=None
     age:StrictInt=Field(gt=18,le=120)
     weight:float=Field(gt=0)
@@ -46,12 +46,13 @@ class Patient(BaseModel):
 #user_model
 patient_info={"name":"kedar jevargi",
               "email":"Kedarjevargi@sbi.com",
-              "age":19,
+              "age":69,
               "weight":55.5,
               "height":1.74,
               "married":True,
               "allergies":["dust","papaya"],
-              "contact_details":{"phone":"1231231321"}
+              "contact_details":{"phone":"1231231321",
+                                 "emergency":"1232343451"}
             }   
 
 patient_1=Patient(**patient_info)
@@ -71,9 +72,9 @@ def update_patient_data(data:Patient):
     print(data.age)
     print("Updated")
 
-insert_patient_data(patient_1)
-print("\n")
-update_patient_data(patient_1)
+# insert_patient_data(patient_1)
+# print("\n")
+# update_patient_data(patient_1)
 
 
 
