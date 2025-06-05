@@ -1,12 +1,1 @@
-{
-    "P01": {
-        "name": "Kedar jevargi",
-        "city": "Bengaluru",
-        "age": 21,
-        "gender": "Male",
-        "height": 1.72,
-        "weight": 55.0,
-        "bmi": 18.59,
-        "verdict": "Normal weight"
-    }
-}
+{}
