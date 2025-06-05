@@ -1,8 +1,18 @@
 from fastapi import FastAPI, Path, HTTPException, Query
+from fastapi.middleware.cors import CORSMiddleware  # Add this import
 from pydantic import BaseModel, Field, field_validator, computed_field
 import json
 
 app = FastAPI()
+
+# Add CORS middleware - ADD THIS SECTION
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all methods
+    allow_headers=["*"],  # Allows all headers
+)
 
 # ---------------------- Patient Model ---------------------- #
 class Patient(BaseModel):
@@ -10,19 +20,19 @@ class Patient(BaseModel):
     city: str = Field(max_length=20)
     age: int = Field(gt=1, le=121)
     gender: str
-    height: float=Field(gt=0)
-    weight: float=Field(gt=0)
-
+    height: float = Field(gt=0)
+    weight: float = Field(gt=0)
+    
     @field_validator("name")
     @classmethod
     def name_capital(cls, value):
         return value.capitalize()
-
+    
     @field_validator("city")
     @classmethod
     def city_capital(cls, value):
         return value.capitalize()
-
+    
     @field_validator("gender")
     @classmethod
     def check_gender(cls, value):
@@ -31,12 +41,12 @@ class Patient(BaseModel):
         if value in gen_data:
             return value
         raise HTTPException(status_code=400, detail=f"Invalid input. Expected one of: {gen_data}")
-
+    
     @computed_field
     @property
     def bmi(self) -> float:
         return round(self.weight / (self.height ** 2), 2)
-
+    
     @computed_field
     @property
     def verdict(self) -> str:
@@ -52,7 +62,6 @@ class Patient(BaseModel):
             return "Obesity Class II (Severe)"
         else:
             return "Obesity Class III (Very Severe or Morbid)"
-
 
 # ---------------------- File Handling ---------------------- #
 def read_data():
@@ -72,7 +81,6 @@ def get_data_by_id(id):
     if pid in data:
         return data[pid]
     raise HTTPException(status_code=404, detail="Patient not found")
-
 
 # ---------------------- Routes ---------------------- #
 @app.get("/")
@@ -98,22 +106,23 @@ def sort_patients(
 ):
     valid_sort_fields = {"weight", "height", "bmi"}
     valid_orders = {"asc", "dsc"}
-
+    
     if sort_by not in valid_sort_fields:
         raise HTTPException(status_code=400, detail=f"Invalid entry. Select from {valid_sort_fields}")
+    
     if order not in valid_orders:
         raise HTTPException(status_code=400, detail=f"Invalid entry. Select from {valid_orders}")
-
+    
     data = read_data()
     reverse = order == "dsc"
-
+    
     # Ensure BMI is present for sorting
     for pid, record in data.items():
         h = record.get("height")
         w = record.get("weight")
         if h and w:
             record["bmi"] = round(w / (h ** 2), 2)
-
+    
     sorted_data = sorted(data.values(), key=lambda x: x.get(sort_by, 0), reverse=reverse)
     return sorted_data
 

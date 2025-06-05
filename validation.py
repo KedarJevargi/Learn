@@ -5,7 +5,7 @@ class Patient(BaseModel):
     name:Annotated[str,Field(max_length=20, 
                              title="Name of the patient", 
                              description="Give the name of the patient in less than 20 char", 
-                             examples=['Kedar','Panchami'])]
+                             examples=['Kedar','Panchami'])] #Example
     email:Optional[EmailStr]=None
     age:StrictInt=Field(gt=18,le=120)
     weight:float=Field(gt=0)
