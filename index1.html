@@ -51,6 +51,7 @@
             padding: 5px;
             margin-bottom: 30px;
             backdrop-filter: blur(10px);
+            flex-wrap: wrap;
         }
 
         .nav-tab {
@@ -65,6 +66,7 @@
             transition: all 0.3s ease;
             font-size: 1rem;
             font-weight: 500;
+            min-width: 120px;
         }
 
         .nav-tab.active {
@@ -160,6 +162,32 @@
             transform: translateY(-2px);
         }
 
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+            margin-right: 10px;
+        }
+
+        .btn-warning:hover {
+            background: #e0a800;
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+        }
+
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 0.875rem;
+        }
+
         .patients-grid {
             display: grid;
             gap: 20px;
@@ -181,7 +209,7 @@
 
         .patient-header {
             display: flex;
-            justify-content: between;
+            justify-content: space-between;
             align-items: center;
             margin-bottom: 15px;
         }
@@ -193,6 +221,11 @@
             border-radius: 20px;
             font-size: 0.8rem;
             font-weight: 600;
+        }
+
+        .patient-actions {
+            display: flex;
+            gap: 10px;
         }
 
         .patient-info {
@@ -275,6 +308,87 @@
             color: #333;
         }
 
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+            padding: 5px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .confirm-dialog {
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .confirm-dialog h3 {
+            color: #dc3545;
+            margin-bottom: 15px;
+        }
+
+        .confirm-dialog p {
+            margin-bottom: 25px;
+            color: #666;
+        }
+
         @media (max-width: 768px) {
             .nav-tabs {
                 flex-direction: column;
@@ -288,6 +402,15 @@
                 flex-direction: column;
                 align-items: stretch;
             }
+
+            .patient-actions {
+                flex-direction: column;
+                gap: 5px;
+            }
+
+            .modal-content {
+                margin: 20px;
+            }
         }
     </style>
 </head>
@@ -295,7 +418,7 @@
     <div class="container">
         <div class="header">
             <h1>🏥 Patient Management System</h1>
-            <p>Comprehensive healthcare record management</p>
+            <p>Comprehensive healthcare record management with full CRUD operations</p>
         </div>
 
         <div class="nav-tabs">
@@ -303,6 +426,7 @@
             <button class="nav-tab" onclick="showSection('view')">👥 View All</button>
             <button class="nav-tab" onclick="showSection('search')">🔍 Search</button>
             <button class="nav-tab" onclick="showSection('sort')">📊 Sort & Filter</button>
+            <button class="nav-tab" onclick="showSection('manage')">⚙️ Manage</button>
         </div>
 
         <!-- Add Patient Section -->
@@ -339,8 +463,10 @@
                         <input type="number" id="weight" name="weight" step="0.1" min="1" max="500" required>
                     </div>
                 </div>
-                <button type="submit" class="btn btn-primary">Add Patient</button>
-                <button type="reset" class="btn btn-secondary">Clear Form</button>
+                <div style="margin-top: 20px;">
+                    <button type="submit" class="btn btn-primary">Add Patient</button>
+                    <button type="reset" class="btn btn-secondary">Clear Form</button>
+                </div>
             </form>
         </div>
 
@@ -355,8 +481,8 @@
         <div id="search-section" class="content-section">
             <h2 style="margin-bottom: 25px; color: #333;">Search Patient</h2>
             <div class="form-group" style="max-width: 300px;">
-                <label for="search-id">Patient ID (e.g., 1, 2, 3...)</label>
-                <input type="text" id="search-id" placeholder="Enter patient ID">
+                <label for="search-id">Patient ID (e.g., P01, P02, P03...)</label>
+                <input type="text" id="search-id" placeholder="Enter patient ID (P01, P02, etc.)">
             </div>
             <button class="btn btn-primary" onclick="searchPatient()">🔍 Search</button>
             <div id="search-result" class="patients-grid" style="margin-top: 20px;"></div>
@@ -385,10 +511,83 @@
             </div>
             <div id="sorted-patients" class="patients-grid"></div>
         </div>
+
+        <!-- Manage Section -->
+        <div id="manage-section" class="content-section">
+            <h2 style="margin-bottom: 25px; color: #333;">Manage Patients</h2>
+            <p style="margin-bottom: 20px; color: #666;">Update or delete patient records. Use the action buttons on each patient card.</p>
+            <button class="btn btn-primary" onclick="loadManagePatients()">🔄 Load Patients</button>
+            <div id="manage-patients-container" class="patients-grid"></div>
+        </div>
+    </div>
+
+    <!-- Update Modal -->
+    <div id="update-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Update Patient</h3>
+                <button class="close-btn" onclick="closeModal('update-modal')">×</button>
+            </div>
+            <form id="update-form">
+                <input type="hidden" id="update-patient-id">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="update-name">Full Name</label>
+                        <input type="text" id="update-name" name="name" maxlength="20">
+                    </div>
+                    <div class="form-group">
+                        <label for="update-city">City</label>
+                        <input type="text" id="update-city" name="city" maxlength="20">
+                    </div>
+                    <div class="form-group">
+                        <label for="update-age">Age</label>
+                        <input type="number" id="update-age" name="age" min="2" max="121">
+                    </div>
+                    <div class="form-group">
+                        <label for="update-gender">Gender</label>
+                        <select id="update-gender" name="gender">
+                            <option value="">Select Gender</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="update-height">Height (meters)</label>
+                        <input type="number" id="update-height" name="height" step="0.01" min="0.1" max="3">
+                    </div>
+                    <div class="form-group">
+                        <label for="update-weight">Weight (kg)</label>
+                        <input type="number" id="update-weight" name="weight" step="0.1" min="1" max="500">
+                    </div>
+                </div>
+                <div style="margin-top: 20px;">
+                    <button type="submit" class="btn btn-primary">Update Patient</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('update-modal')">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="delete-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Confirm Deletion</h3>
+                <button class="close-btn" onclick="closeModal('delete-modal')">×</button>
+            </div>
+            <div class="confirm-dialog">
+                <h3>⚠️ Are you sure?</h3>
+                <p>This action cannot be undone. The patient record will be permanently deleted.</p>
+                <p><strong>Patient ID: <span id="delete-patient-id"></span></strong></p>
+                <button class="btn btn-danger" onclick="confirmDelete()">Yes, Delete</button>
+                <button type="button" class="btn btn-secondary" onclick="closeModal('delete-modal')">Cancel</button>
+            </div>
+        </div>
     </div>
 
     <script>
         const API_BASE = 'http://127.0.0.1:8000';
+        let currentDeleteId = null;
 
         // Show different sections
         function showSection(section) {
@@ -398,19 +597,37 @@
             
             // Show selected section
             document.getElementById(section + '-section').classList.add('active');
-            event.target.classList.add('active');
+            document.querySelector(`.nav-tab[onclick="showSection('${section}')"]`).classList.add('active');
         }
 
         // Show alert messages
         function showAlert(message, type = 'success') {
+            // Remove existing alerts in the active section
+            document.querySelectorAll('.content-section.active .alert').forEach(alert => alert.remove());
+
             const alertDiv = document.createElement('div');
             alertDiv.className = `alert alert-${type}`;
             alertDiv.textContent = message;
             
             const container = document.querySelector('.content-section.active');
-            container.insertBefore(alertDiv, container.firstChild);
-            
+            if (container) {
+                 // Insert before the first child (e.g., h2 or form)
+                container.insertBefore(alertDiv, container.firstElementChild);
+            } else {
+                // Fallback if active section not found (shouldn't happen)
+                document.body.prepend(alertDiv);
+            }
+
             setTimeout(() => alertDiv.remove(), 5000);
+        }
+
+        // Modal functions
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
         }
 
         // Add new patient
@@ -440,48 +657,139 @@
                     showAlert(result.message, 'success');
                     e.target.reset();
                 } else {
-                    showAlert(result.detail || 'Error adding patient', 'error');
+                     // Handle validation errors from FastAPI
+                    if (response.status === 422 && result.detail) {
+                        const errorMessages = result.detail.map(err => `${err.loc.join(' -> ')}: ${err.msg}`).join('<br>');
+                         showAlert(`Validation Error:<br>${errorMessages}`, 'error');
+                    } else {
+                        showAlert(result.detail || 'Error adding patient', 'error');
+                    }
                 }
             } catch (error) {
+                console.error('Fetch error:', error);
+                showAlert('Connection error. Make sure the API server is running.', 'error');
+            }
+        });
+
+        // Update patient
+        document.getElementById('update-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const patientId = document.getElementById('update-patient-id').value;
+            const formData = new FormData(e.target);
+            
+            // Only include fields that have been filled in the update form
+            // This allows partial updates. Required fields should be handled by backend validation.
+            const updateData = {};
+            let isFormEmpty = true;
+            for (let [key, value] of formData.entries()) {
+                 // Exclude the hidden ID field and check if the value is not empty/whitespace
+                 if (key !== 'update-patient-id' && value !== null && value.trim() !== '') {
+                    isFormEmpty = false;
+                    if (key === 'age') {
+                        updateData[key] = parseInt(value);
+                    } else if (key === 'height' || key === 'weight') {
+                         // Use parseFloat and check if it's a valid number before adding
+                         const floatValue = parseFloat(value);
+                         if (!isNaN(floatValue)) {
+                            updateData[key] = floatValue;
+                         } else {
+                            // Handle invalid number input if needed, perhaps show an alert
+                             console.warn(`Invalid number input for ${key}: ${value}`);
+                         }
+                    } else {
+                        updateData[key] = value;
+                    }
+                }
+            }
+
+             if (isFormEmpty) {
+                showAlert('No fields were updated.', 'error');
+                closeModal('update-modal');
+                return; // Prevent API call if no data to update
+             }
+
+            try {
+                const response = await fetch(`${API_BASE}/update/${patientId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(updateData)
+                });
+
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showAlert(result.message, 'success');
+                    closeModal('update-modal');
+                    loadManagePatients(); // Refresh the manage view
+                } else {
+                     if (response.status === 422 && result.detail) {
+                        const errorMessages = result.detail.map(err => `${err.loc.join(' -> ')}: ${err.msg}`).join('<br>');
+                         showAlert(`Validation Error:<br>${errorMessages}`, 'error');
+                    } else {
+                        showAlert(result.detail || 'Error updating patient', 'error');
+                    }
+                }
+            } catch (error) {
+                console.error('Fetch error:', error);
                 showAlert('Connection error. Make sure the API server is running.', 'error');
             }
         });
 
         // Create patient card HTML
-        function createPatientCard(patientId, patient) {
+        function createPatientCard(patientId, patient, showActions = false) {
+            // Ensure patient object is valid
+            if (!patient || typeof patient !== 'object') {
+                 console.error("Invalid patient data provided:", patient);
+                 return ''; // Return empty string for invalid data
+            }
+
             const bmiClass = getBMIClass(patient.verdict);
+            const actionsHtml = showActions ? `
+                <div class="patient-actions">
+                    <button class="btn btn-warning btn-sm" onclick="openUpdateModal('${patientId}', ${JSON.stringify(patient).replace(/"/g, '"')})">
+                        ✏️ Edit
+                    </button>
+                    <button class="btn btn-danger btn-sm" onclick="openDeleteModal('${patientId}')">
+                        🗑️ Delete
+                    </button>
+                </div>
+            ` : '';
             
             return `
                 <div class="patient-card">
                     <div class="patient-header">
-                        <h3 style="color: #333; margin: 0;">${patient.name}</h3>
-                        <span class="patient-id">${patientId}</span>
+                        <div>
+                            <h3 style="color: #333; margin: 0;">${patient.name || 'N/A'}</h3>
+                            <span class="patient-id">${patientId || 'N/A'}</span>
+                        </div>
+                        ${actionsHtml}
                     </div>
                     <div class="patient-info">
                         <div class="info-item">
                             <span class="info-label">City</span>
-                            <span class="info-value">${patient.city}</span>
+                            <span class="info-value">${patient.city || 'N/A'}</span>
                         </div>
                         <div class="info-item">
                             <span class="info-label">Age</span>
-                            <span class="info-value">${patient.age} years</span>
+                            <span class="info-value">${patient.age !== undefined && patient.age !== null ? patient.age + ' years' : 'N/A'}</span>
                         </div>
                         <div class="info-item">
                             <span class="info-label">Gender</span>
-                            <span class="info-value">${patient.gender}</span>
+                            <span class="info-value">${patient.gender || 'N/A'}</span>
                         </div>
                         <div class="info-item">
                             <span class="info-label">Height</span>
-                            <span class="info-value">${patient.height}m</span>
+                            <span class="info-value">${patient.height !== undefined && patient.height !== null ? patient.height + 'm' : 'N/A'}</span>
                         </div>
                         <div class="info-item">
                             <span class="info-label">Weight</span>
-                            <span class="info-value">${patient.weight}kg</span>
+                            <span class="info-value">${patient.weight !== undefined && patient.weight !== null ? patient.weight + 'kg' : 'N/A'}</span>
                         </div>
                         <div class="info-item">
                             <span class="info-label">BMI</span>
-                            <span class="info-value">${patient.bmi}</span>
-                            <span class="bmi-badge ${bmiClass}">${patient.verdict}</span>
+                            <span class="info-value">${patient.bmi !== undefined && patient.bmi !== null ? patient.bmi : 'N/A'}</span>
+                            ${patient.verdict ? `<span class="bmi-badge ${bmiClass}">${patient.verdict}</span>` : ''}
                         </div>
                     </div>
                 </div>
@@ -490,10 +798,74 @@
 
         // Get BMI class for styling
         function getBMIClass(verdict) {
-            if (verdict.includes('Underweight')) return 'underweight';
-            if (verdict.includes('Normal')) return 'normal';
-            if (verdict.includes('Overweight')) return 'overweight';
-            return 'obese';
+            if (!verdict) return ''; // Return empty if verdict is null or undefined
+            const lowerVerdict = verdict.toLowerCase();
+            if (lowerVerdict.includes('underweight')) return 'underweight';
+            if (lowerVerdict.includes('normal')) return 'normal';
+            if (lowerVerdict.includes('overweight')) return 'overweight';
+            if (lowerVerdict.includes('obese')) return 'obese';
+            return ''; // Default empty class
+        }
+
+        // Open update modal
+        function openUpdateModal(patientId, patient) {
+             // Clear previous form values before populating
+            document.getElementById('update-form').reset();
+
+            document.getElementById('update-patient-id').value = patientId;
+            // Populate fields only if the value exists in the patient object
+            document.getElementById('update-name').value = patient.name || '';
+            document.getElementById('update-city').value = patient.city || '';
+            document.getElementById('update-age').value = patient.age !== undefined && patient.age !== null ? patient.age : '';
+            document.getElementById('update-gender').value = patient.gender || '';
+            document.getElementById('update-height').value = patient.height !== undefined && patient.height !== null ? patient.height : '';
+            document.getElementById('update-weight').value = patient.weight !== undefined && patient.weight !== null ? patient.weight : '';
+            
+            openModal('update-modal');
+        }
+
+        // Open delete modal
+        function openDeleteModal(patientId) {
+            currentDeleteId = patientId;
+            document.getElementById('delete-patient-id').textContent = patientId;
+            openModal('delete-modal');
+        }
+
+        // Confirm delete
+        async function confirmDelete() {
+            if (!currentDeleteId) return; // Should not happen if modal is opened correctly
+
+            try {
+                const response = await fetch(`${API_BASE}/delete/${currentDeleteId}`, {
+                    method: 'DELETE'
+                });
+
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showAlert(result.message, 'success');
+                    closeModal('delete-modal');
+                    // Depending on which section initiated the delete, refresh that section
+                    // For simplicity, if delete is confirmed, refresh the 'Manage' section
+                    // A more robust solution might check the current active tab
+                    loadManagePatients();
+                     // If the search result was for this patient, clear it
+                     const searchIdInput = document.getElementById('search-id');
+                     if (searchIdInput.value === currentDeleteId) {
+                        document.getElementById('search-result').innerHTML = '';
+                        searchIdInput.value = ''; // Clear the search input too
+                     }
+                } else {
+                    showAlert(result.detail || 'Error deleting patient', 'error');
+                    closeModal('delete-modal'); // Close modal even on error
+                }
+            } catch (error) {
+                console.error('Fetch error:', error);
+                showAlert('Connection error. Make sure the API server is running.', 'error');
+                closeModal('delete-modal'); // Close modal on connection error
+            } finally {
+                currentDeleteId = null; // Reset delete ID
+            }
         }
 
         // Load all patients
@@ -503,13 +875,19 @@
 
             try {
                 const response = await fetch(`${API_BASE}/views`);
+                
+                if (!response.ok) {
+                     const errorData = await response.json();
+                     throw new Error(errorData.detail || `HTTP error! status: ${response.status}`);
+                }
+
                 const patients = await response.json();
 
-                if (Object.keys(patients).length === 0) {
+                if (!patients || Object.keys(patients).length === 0) {
                     container.innerHTML = `
                         <div class="empty-state">
                             <h3>No patients found</h3>
-                            <p>Add some patients to get started!</p>
+                            <p>Add some patients using the "Add Patient" tab!</p>
                         </div>
                     `;
                     return;
@@ -520,6 +898,42 @@
                     .join('');
                     
             } catch (error) {
+                console.error('Error loading all patients:', error);
+                container.innerHTML = '<div class="alert alert-error">Error loading patients. Make sure the API server is running.</div>';
+            }
+        }
+
+        // Load patients for management (includes edit/delete buttons)
+        async function loadManagePatients() {
+            const container = document.getElementById('manage-patients-container');
+            container.innerHTML = '<div class="loading">Loading patients...</div>';
+
+            try {
+                const response = await fetch(`${API_BASE}/views`);
+
+                if (!response.ok) {
+                     const errorData = await response.json();
+                     throw new Error(errorData.detail || `HTTP error! status: ${response.status}`);
+                }
+
+                const patients = await response.json();
+
+                if (!patients || Object.keys(patients).length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <h3>No patients found</h3>
+                            <p>Add some patients using the "Add Patient" tab!</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = Object.entries(patients)
+                    .map(([id, patient]) => createPatientCard(id, patient, true))
+                    .join('');
+                    
+            } catch (error) {
+                console.error('Error loading patients for manage:', error);
                 container.innerHTML = '<div class="alert alert-error">Error loading patients. Make sure the API server is running.</div>';
             }
         }
@@ -529,64 +943,137 @@
             const patientId = document.getElementById('search-id').value.trim();
             const container = document.getElementById('search-result');
             
+            // Clear previous results and alerts
+            container.innerHTML = '';
+            document.querySelectorAll('#search-section .alert').forEach(alert => alert.remove());
+
             if (!patientId) {
-                showAlert('Please enter a patient ID', 'error');
+                showAlert('Please enter a patient ID.', 'error');
                 return;
             }
 
             container.innerHTML = '<div class="loading">Searching...</div>';
 
             try {
-                const response = await fetch(`${API_BASE}/views/${patientId}`);
+                const response = await fetch(`${API_BASE}/search/${patientId}`);
                 
-                if (response.ok) {
-                    const patient = await response.json();
-                    container.innerHTML = createPatientCard(`P0${patientId}`, patient);
+                if (!response.ok) {
+                     // If status is 404, it means patient not found
+                     if (response.status === 404) {
+                         container.innerHTML = `<div class="empty-state"><h3>Patient "${patientId}" not found</h3><p>Please check the ID and try again.</p></div>`;
+                         showAlert(`Patient with ID "${patientId}" not found.`, 'error');
+                     } else {
+                          // Handle other potential errors
+                         const errorData = await response.json();
+                         throw new Error(errorData.detail || `HTTP error! status: ${response.status}`);
+                     }
                 } else {
-                    container.innerHTML = '<div class="alert alert-error">Patient not found</div>';
+                    // Found the patient
+                    const patient = await response.json();
+                    // The backend might return a single patient object directly or an object with patient_id key
+                    // Assuming it returns the patient object directly based on the API endpoint `/search/{patient_id}`
+                    if (patient && Object.keys(patient).length > 0) {
+                         // Assuming the API returns the patient object directly, we might need the ID from the input field
+                        container.innerHTML = createPatientCard(patientId, patient);
+                        showAlert(`Patient "${patient.name}" found!`, 'success');
+                    } else {
+                         container.innerHTML = `<div class="empty-state"><h3>Patient "${patientId}" not found</h3><p>Received empty data from the server.</p></div>`;
+                         showAlert(`Patient with ID "${patientId}" not found or server returned empty data.`, 'error');
+                    }
                 }
+
             } catch (error) {
-                container.innerHTML = '<div class="alert alert-error">Error searching patient. Make sure the API server is running.</div>';
+                console.error('Error searching patient:', error);
+                container.innerHTML = '<div class="alert alert-error">Error searching patient. Make sure the API server is running and the ID is correct.</div>';
+                 showAlert('Connection error or invalid request. Make sure the API server is running.', 'error');
             }
         }
 
-        // Sort patients
+        // Sort patients (needs fetching all or filtering data first)
         async function sortPatients() {
             const sortBy = document.getElementById('sort-by').value;
-            const order = document.getElementById('sort-order').value;
+            const sortOrder = document.getElementById('sort-order').value;
             const container = document.getElementById('sorted-patients');
-            
-            container.innerHTML = '<div class="loading">Sorting...</div>';
+
+            // Clear previous results and alerts
+             container.innerHTML = '';
+            document.querySelectorAll('#sort-section .alert').forEach(alert => alert.remove());
+            container.innerHTML = '<div class="loading">Loading and sorting patients...</div>';
 
             try {
-                const response = await fetch(`${API_BASE}/sort?sort_by=${sortBy}&order=${order}`);
+                // Fetch all patients first, then sort client-side
+                // For very large datasets, sorting should be done server-side
+                const response = await fetch(`${API_BASE}/views`);
+
+                if (!response.ok) {
+                     const errorData = await response.json();
+                     throw new Error(errorData.detail || `HTTP error! status: ${response.status}`);
+                }
+
                 const patients = await response.json();
 
-                if (patients.length === 0) {
-                    container.innerHTML = '<div class="empty-state"><h3>No patients to sort</h3></div>';
+                if (!patients || Object.keys(patients).length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <h3>No patients to sort</h3>
+                            <p>Add some patients to get started!</p>
+                        </div>
+                    `;
                     return;
                 }
 
-                container.innerHTML = patients
-                    .map((patient, index) => createPatientCard(`Sorted #${index + 1}`, patient))
+                const patientList = Object.entries(patients).map(([id, patient]) => ({ id, ...patient }));
+
+                patientList.sort((a, b) => {
+                    let valA, valB;
+
+                    // Use default values (0 or '') if property is missing or invalid
+                    if (sortBy === 'height' || sortBy === 'weight' || sortBy === 'bmi') {
+                         valA = parseFloat(a[sortBy] || 0);
+                         valB = parseFloat(b[sortBy] || 0);
+                         // Handle potential NaN if parseFloat fails, treat NaN as 0 for sorting purposes
+                         if (isNaN(valA)) valA = 0;
+                         if (isNaN(valB)) valB = 0;
+                    } else {
+                         // For other potential string sorting (like name, city, gender)
+                         valA = (a[sortBy] || '').toString().toLowerCase();
+                         valB = (b[sortBy] || '').toString().toLowerCase();
+                         if (valA < valB) return sortOrder === 'asc' ? -1 : 1;
+                         if (valA > valB) return sortOrder === 'asc' ? 1 : -1;
+                         return 0; // Equal
+                    }
+
+                    if (sortOrder === 'asc') {
+                        return valA - valB;
+                    } else { // dsc
+                        return valB - valA;
+                    }
+                });
+
+                container.innerHTML = patientList
+                    .map(patient => createPatientCard(patient.id, patient))
                     .join('');
-                    
+                
+                showAlert(`Patients sorted by ${sortBy} (${sortOrder}).`, 'success');
+
             } catch (error) {
-                container.innerHTML = '<div class="alert alert-error">Error sorting patients. Make sure the API server is running.</div>';
+                 console.error('Error sorting patients:', error);
+                 container.innerHTML = '<div class="alert alert-error">Error loading or sorting patients. Make sure the API server is running.</div>';
+                 showAlert('Error loading or sorting patients. Make sure the API server is running.', 'error');
             }
         }
 
-        // Load patients when view section is opened
-        document.addEventListener('DOMContentLoaded', () => {
-            // Add click handlers to nav tabs
-            document.querySelectorAll('.nav-tab').forEach((tab, index) => {
-                tab.addEventListener('click', () => {
-                    if (index === 1) { // View All tab
-                        setTimeout(loadAllPatients, 100);
-                    }
-                });
-            });
-        });
+
+        // Initial load for the first active section if needed
+        // Currently, the 'Add Patient' section is active by default and doesn't need data loaded on page load.
+        // You might want to call loadAllPatients() or loadManagePatients() if one of those is the default active section.
+
+        // Example: If 'View All' was default, you'd add this:
+        // window.onload = () => {
+        //     showSection('view'); // Programmatically activate the view section
+        //     loadAllPatients(); // Load data for it
+        // };
+
     </script>
 </body>
 </html>

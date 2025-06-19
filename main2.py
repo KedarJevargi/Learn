@@ -18,7 +18,7 @@ app.add_middleware(
 class Patient(BaseModel):
     name: str = Field(max_length=20)
     city: str = Field(max_length=20)
-    age: int = Field(gt=1, le=121)
+    age: int = Field(gt=0, le=121)
     gender: str
     height: float = Field(gt=0)
     weight: float = Field(gt=0)
