@@ -135,7 +135,7 @@ def write_data(data):
 
 def get_data_by_id(id):
     data = read_data()
-    pid = f"P0{id}"
+    pid = f"P{id}"
     if pid in data:
         return data[pid]
     raise HTTPException(status_code=404, detail="Patient not found")

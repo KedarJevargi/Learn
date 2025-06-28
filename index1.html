@@ -955,7 +955,7 @@
             container.innerHTML = '<div class="loading">Searching...</div>';
 
             try {
-                const response = await fetch(`${API_BASE}/search/${patientId}`);
+                const response = await fetch(`${API_BASE}/views/${patientId}`);
                 
                 if (!response.ok) {
                      // If status is 404, it means patient not found
